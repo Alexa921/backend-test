@@ -39,7 +39,10 @@ usuariosController.Registrar = function (request, response) {
   usuariosModel.Existe(post, function (err, existe) {
     if (err) {
       console.error("❌ Error verificando existencia:", err);
-      return response.json({ state: false, mensaje: "Error interno al verificar el usuario" });
+      return response.json({
+        state: false,
+        mensaje: "Error interno al verificar el usuario",
+      });
     }
 
     if (existe) {
@@ -77,12 +80,14 @@ usuariosController.Registrar = function (request, response) {
             console.error("❌ Error enviando correo:", error);
             return response.json({
               state: true,
-              mensaje: "¡Registro exitoso!, pero hubo un problema enviando el correo.",
+              mensaje:
+                "¡Registro exitoso!, pero hubo un problema enviando el correo.",
             });
           }
           return response.json({
             state: true,
-            mensaje: "¡Registro exitoso! Revisa tu correo para activar tu cuenta.",
+            mensaje:
+              "¡Registro exitoso! Revisa tu correo para activar tu cuenta.",
           });
         });
       } else {
@@ -119,58 +124,40 @@ usuariosController.ListarUnico = function (request, response) {
     response.json(res);
   });
 };
-
 usuariosController.Actualizar = function (request, response) {
   const post = {
     nombre: request.body.nombre,
     email: request.body.email,
     estado: request.body.estado,
-    rol: request.body.rol,
   };
 
-  if (!post.nombre) {
-    return response.json({ state: false, mensaje: "El nombre es requerido" });
-  }
-
-  if (!post.email) {
-    return response.json({ state: false, mensaje: "El email es requerido" });
-  }
-
-  if (!post.estado) {
-    return response.json({ state: false, mensaje: "El estado es requerido" });
-  }
-
-  if (!post.rol) {
-    return response.json({ state: false, mensaje: "El campo rol es obligatorio" });
-  }
-
-  if (["Administrador", "Cliente", "Facturador"].indexOf(post.rol) === -1) {
+  if (!post.nombre || !post.email || !post.estado) {
     return response.json({
       state: false,
-      mensaje: "El rol debe ser Administrador, Cliente o Facturador",
+      mensaje: "Todos los campos son requeridos",
     });
   }
 
-  usuariosModel.Existe(post, function (err, existe) {
+  usuariosModel.Existe({ email: post.email }, function (err, existe) {
     if (err || !existe) {
       return response.json({
         state: false,
-        mensaje: "No podemos actualizar el usuario porque no existe",
+        mensaje: "El usuario no existe en la base de datos",
       });
     }
 
     usuariosModel.Actualizar(post, function (err, data) {
-      if (err || !data.state) {
+      if (err || !data?.state) {
         return response.json({
           state: false,
-          mensaje: "Error al actualizar el usuario",
-          error: err?.message || data?.error,
+          mensaje: "No se pudo actualizar el usuario",
         });
       }
 
       return response.json({
         state: true,
         mensaje: "Usuario actualizado correctamente",
+        usuario: data.usuario,
       });
     });
   });
@@ -274,4 +261,3 @@ usuariosController.Activar = function (request, response) {
 };
 
 module.exports.usuariosController = usuariosController;
-

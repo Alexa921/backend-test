@@ -1,5 +1,6 @@
 var productosController = {};
 var productosModel = require("../modelos/productosModel.js").productosModel;
+const mongoose = require("mongoose");
 
 // Crear Producto
 productosController.Guardar = function (request, response) {
@@ -11,7 +12,6 @@ productosController.Guardar = function (request, response) {
     categoria: request.body.categoria,
   };
 
-  // Validaciones
   if (!post.titulo || post.titulo.trim() === "") {
     return response.json({ state: false, mensaje: "El título es requerido" });
   }
@@ -19,18 +19,14 @@ productosController.Guardar = function (request, response) {
   if (post.titulo.length > 100) {
     return response.json({
       state: false,
-      mensaje: "El nombre no debe exceder los 100 caracteres",
+      mensaje: "El título no debe exceder los 100 caracteres",
     });
   }
 
-  if (!post.precio) {
-    return response.json({ state: false, mensaje: "El precio es requerido" });
-  }
-
-  if (isNaN(post.precio)) {
+  if (!post.precio || isNaN(post.precio)) {
     return response.json({
       state: false,
-      mensaje: "El precio debe ser un número válido",
+      mensaje: "El precio es requerido y debe ser un número válido",
     });
   }
 
@@ -39,170 +35,104 @@ productosController.Guardar = function (request, response) {
   }
 
   if (!post.material || post.material.trim() === "") {
-    return response.json({
-      state: false,
-      mensaje: "El material es requerido",
-    });
+    return response.json({ state: false, mensaje: "El material es requerido" });
   }
 
   if (!post.categoria) {
-    return response.json({
-      state: false,
-      mensaje: "La categoría es requerida",
-    });
+    return response.json({ state: false, mensaje: "La categoría es requerida" });
   }
 
-  // Verificar si el producto ya existe
-  productosModel.Existe(post, function (existe) {
-    if (existe.length > 0) {
-      return response.json({
-        state: false,
-        mensaje: "El título del producto ya existe, intente con otro",
-      });
+  productosModel.Guardar(post, function (data) {
+    if (data.state) {
+      return response.json({ state: true, mensaje: "Producto guardado correctamente" });
+    } else {
+      return response.json({ state: false, mensaje: "Error al guardar el producto" });
     }
-
-    // Guardar producto
-    productosModel.Guardar(post, function (data) {
-      if (data.state) {
-        return response.json({
-          state: true,
-          mensaje: "El producto se ha agregado correctamente",
-        });
-      } else {
-        return response.json({
-          state: false,
-          mensaje: "Error al guardar el producto",
-        });
-      }
-    });
   });
 };
 
-// Leer todos los productos
-
+// Listar todos los productos
 productosController.ListarTodos = function (request, response) {
   productosModel.ListarTodos({}, function (err, productos) {
-    if (err) {
-      return response.json({ error: err.message });
-    }
+    if (err) return response.json({ error: err.message });
     return response.json(productos);
   });
 };
 
-// Leer un producto por título
-productosController.Listartitulo = function (request, response) {
-  var post = {
-    titulo: request.body.titulo,
-  };
-
-  if (!post.titulo) {
-    return response.json({
-      state: false,
-      mensaje: "El título es requerido",
-    });
+// Obtener un producto por ID
+productosController.ListarId = function (request, response) {
+  const id = request.params.id;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return response.json({ state: false, mensaje: "ID no válido" });
   }
 
-  productosModel.Listartitulo(post, function (res) {
-    response.json(res);
+  productosModel.ListarId(id, function (err, producto) {
+    if (err || !producto) {
+      return response.json({ state: false, mensaje: "Producto no encontrado" });
+    }
+    response.json({ state: true, producto });
   });
 };
 
-// Actualizar producto
+// ✅ Actualizar producto por ID desde params
 productosController.Actualizar = function (request, response) {
-  var post = {
+  const id = request.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return response.json({ state: false, mensaje: "ID no válido" });
+  }
+
+  const post = {
     titulo: request.body.titulo,
     precio: request.body.precio,
-    imagen: request.body.imagen,
+    imagen: request.body.imagen || "default.jpg",
     material: request.body.material,
     categoria: request.body.categoria,
   };
 
-  // Validaciones
-  if (!post.titulo) {
-    return response.json({ state: false, mensaje: "El título es requerido" });
-  }
-
-  if (!post.precio) {
-    return response.json({ state: false, mensaje: "El precio es requerido" });
-  }
-
-  if (!post.imagen) {
-    return response.json({ state: false, mensaje: "La imagen es requerida" });
-  }
-
-  if (!post.material || post.material.trim() === "") {
+  if (
+    !post.titulo ||
+    !post.precio ||
+    !post.imagen ||
+    !post.material ||
+    !post.categoria
+  ) {
     return response.json({
       state: false,
-      mensaje: "El material es requerido",
+      mensaje: "Faltan campos obligatorios",
     });
   }
 
-  if (!post.categoria) {
-    return response.json({
-      state: false,
-      mensaje: "La categoría es requerida",
-    });
-  }
-
-  // Verificar si el producto existe para actualizarlo
-  productosModel.Existe(post, function (existe) {
-    if (existe.length == 0) {
+  productosModel.ActualizarPorId(id, post, function (data) {
+    if (data.state) {
+      return response.json({
+        state: true,
+        mensaje: "Producto actualizado con éxito",
+      });
+    } else {
       return response.json({
         state: false,
-        mensaje: "No podemos actualizar un título que no existe",
+        mensaje: "Error al actualizar el producto",
+        error: data.error,
       });
     }
-
-    // Actualizar producto
-    productosModel.Actualizar(post, function (data) {
-      if (data.state == true) {
-        return response.json({
-          state: true,
-          mensaje: "Producto actualizado con éxito",
-        });
-      } else {
-        return response.json({
-          state: false,
-          mensaje: "Error al actualizar el producto",
-          error: data.error,
-        });
-      }
-    });
   });
 };
 
-// Borrar producto
-productosController.Borrar = function (request, response) {
-  var post = {
-    titulo: request.query.titulo || request.body.titulo,
-  };
 
-  if (!post.titulo) {
-    return response.json({ state: false, mensaje: "El título es requerido" });
+// Borrar producto por ID
+productosController.Borrar = function (request, response) {
+  const id = request.params.id || request.body._id;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return response.json({ state: false, mensaje: "ID no válido" });
   }
 
-  // Verificar si el producto existe antes de borrarlo
-  productosModel.Existe(post, function (existe) {
-    if (!existe || existe.length == 0) {
-      return response.json({
-        state: false,
-        mensaje: "No podemos borrar un título que no existe",
-      });
+  productosModel.BorrarPorId(id, function (data) {
+    if (data.state) {
+      return response.json({ state: true, mensaje: "Producto borrado con éxito" });
     } else {
-      // Borrar producto
-      productosModel.Borrar(post, function (data) {
-        if (data.state) {
-          return response.json({
-            state: true,
-            mensaje: "Producto borrado con éxito",
-          });
-        } else {
-          return response.json({
-            state: false,
-            mensaje: "Error al borrar el producto",
-          });
-        }
-      });
+      return response.json({ state: false, mensaje: "Error al borrar el producto" });
     }
   });
 };

@@ -4,36 +4,30 @@ module.exports = function (app) {
       require("./api/controladores/productosController.js").productosController;
     const usuariosController =
       require("./api/controladores/usuariosController.js").usuariosController;
+      const serviciosController =
+      require("./api/controladores/serviciosController.js").serviciosController;
   
-    // ===============================
-    // RUTAS DE PRODUCTOS
-    // ===============================
   
-    // Crear un producto
-    app.post("/productos/guardar", (req, res) => {
-      productosController.Guardar(req, res);
-    });
-  
-    // Actualizar un producto
-    app.post("/productos/actualizar", (req, res) => {
-      productosController.Actualizar(req, res);
-    });
-  
-    // Borrar un producto
-    app.post("/productos/borrar", (req, res) => {
-      productosController.Borrar(req, res);
-    });
-  
-    // Listar todos los productos
-    app.get("/productos/listarTodos", (req, res) => {
-      productosController.ListarTodos(req, res);
-    });
-  
-    // Listar productos por título
-    app.post("/productos/listartitulo", (req, res) => {
-      productosController.Listartitulo(req, res);
-    });
-  
+  // ===============================
+  // RUTAS DE PRODUCTOS (por ID)
+  // ===============================
+
+  // Crear un producto
+  app.post("/productos/guardar", productosController.Guardar);
+
+  // Actualizar un producto por ID
+  app.put("/productos/actualizar/:id", productosController.Actualizar);
+
+  // Borrar un producto por ID
+  app.delete("/productos/borrar/:id", productosController.Borrar);
+
+  // Listar todos los productos
+  app.get("/productos/listarTodos", productosController.ListarTodos);
+
+  // Obtener un producto por ID
+  app.get("/productos/listarId/:id", productosController.ListarId);
+
+
     // ===============================
     // RUTAS DE USUARIOS
     // ===============================
@@ -77,4 +71,23 @@ module.exports = function (app) {
     app.get("/usuarios/activar/:email/:codigo", (req, res) => {
       usuariosController.Activar(req, res);
     });
+
+      // ===============================
+  // RUTAS DE SERVICIOS 
+  // ===============================
+
+  // Crear un servicios
+  app.post("/servicios/guardar", serviciosController.Guardar);
+
+  // Actualizar un servicios
+  app.put("/servicios/actualizar/:id", serviciosController.Actualizar);
+
+  // Borrar un servicios
+  app.delete("/servicios/borrar/:id", serviciosController.Borrar);
+
+  // Listar todos los servicios
+  app.get("/servicios/listarTodos", serviciosController.ListarTodos);
+
+  // Obtener un servicios
+  app.get("/servicios/listarId/:id", serviciosController.ListarId);
   };

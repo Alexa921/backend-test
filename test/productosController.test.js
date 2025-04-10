@@ -3,21 +3,6 @@ const productosController =
 const productosModel = require("../api/modelos/productosModel").productosModel;
 const mongoose = require("mongoose");
 
-// Mocking del modelo productosModel
-/*jest.mock("../api/modelos/productosModel.js", () => {
-  return {
-    productosModel: {
-      Guardar: jest.fn((post, callback) => callback({ state: true })),
-      Existe: jest.fn((post, callback) => callback([])),
-      ListarTodos: jest.fn((filtro, callback) => callback(null, [])),
-      Listartitulo: jest.fn((post, callback) => callback({})),
-      Actualizar: jest.fn((post, callback) => callback({ state: true })),
-      Borrar: jest.fn((post, callback) => callback({ state: true })),
-    },
-  };
-});
-*/
-
 describe("Productos Controller", () => {
   let request, response;
 
