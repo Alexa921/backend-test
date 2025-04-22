@@ -1,13 +1,9 @@
 module.exports = function (app) {
-    // Controladores
-    const productosController =
-      require("./api/controladores/productosController.js").productosController;
-    const usuariosController =
-      require("./api/controladores/usuariosController.js").usuariosController;
-      const serviciosController =
-      require("./api/controladores/serviciosController.js").serviciosController;
-  
-  
+  // Controladores
+  const productosController = require("./api/controladores/productosController.js").productosController;
+  const usuariosController = require("./api/controladores/usuariosController.js").usuariosController;
+  const serviciosController = require("./api/controladores/serviciosController.js").serviciosController;
+
   // ===============================
   // RUTAS DE PRODUCTOS (por ID)
   // ===============================
@@ -27,67 +23,66 @@ module.exports = function (app) {
   // Obtener un producto por ID
   app.get("/productos/listarId/:id", productosController.ListarId);
 
+  // ===============================
+  // RUTAS DE USUARIOS
+  // ===============================
 
-    // ===============================
-    // RUTAS DE USUARIOS
-    // ===============================
-  
-    // Registrar usuario
-    app.post("/usuarios/registrar", (req, res) => {
-      usuariosController.Registrar(req, res);
-    });
-  
-    // Actualizar usuario
-    app.post("/usuarios/actualizar", (req, res) => {
-      usuariosController.Actualizar(req, res);
-    });
-  
-    // Borrar usuario
-    app.post("/usuarios/borrar", (req, res) => {
-      usuariosController.Borrar(req, res);
-    });
-  
-    // Listar todos los usuarios
-    app.get("/usuarios/listarTodos", (req, res) => {
-      usuariosController.ListarTodos(req, res);
-    });
-  
-    // Listar usuario por email
-    app.post("/usuarios/listarUnico", (req, res) => {
-      usuariosController.ListarUnico(req, res);
-    });
-  
-    // Login
-    app.post("/usuarios/login", (req, res) => {
-      usuariosController.Login(req, res);
-    });
-  
-    // Estado del usuario (temporal)
-    app.post("/usuarios/state", (req, res) => {
-      res.json({ message: "Estado de la solicitud recibido" });
-    });
-  
-    // Activar cuenta por email + código
-    app.get("/usuarios/activar/:email/:codigo", (req, res) => {
-      usuariosController.Activar(req, res);
-    });
+  // Registrar usuario
+  app.post("/usuarios/registrar", (req, res) => {
+    usuariosController.Registrar(req, res);
+  });
 
-      // ===============================
+  // Actualizar usuario
+  app.put("/usuarios/actualizar", (req, res) => { // Cambio de POST a PUT
+    usuariosController.Actualizar(req, res);
+  });
+
+  // Borrar usuario
+  app.delete("/usuarios/borrar", (req, res) => { // Cambio de POST a DELETE
+    usuariosController.Borrar(req, res);
+  });
+
+  // Listar todos los usuarios
+  app.get("/usuarios/listarTodos", (req, res) => {
+    usuariosController.ListarTodos(req, res);
+  });
+
+  // Listar usuario por email
+  app.post("/usuarios/listarUnico", (req, res) => {
+    usuariosController.ListarUnico(req, res);
+  });
+
+  // Login
+  app.post("/usuarios/login", (req, res) => {
+    usuariosController.Login(req, res);
+  });
+
+  // Estado del usuario (temporal)
+  app.post("/usuarios/state", (req, res) => {
+    res.json({ message: "Estado de la solicitud recibido" });
+  });
+
+  // Activar cuenta por email + código
+  app.get("/usuarios/activar/:email/:codigo", (req, res) => {
+    usuariosController.Activar(req, res);
+  });
+
+  // ===============================
   // RUTAS DE SERVICIOS 
   // ===============================
 
-  // Crear un servicios
+  // Crear un servicio
   app.post("/servicios/guardar", serviciosController.Guardar);
 
-  // Actualizar un servicios
+  // Actualizar un servicio
   app.put("/servicios/actualizar/:id", serviciosController.Actualizar);
 
-  // Borrar un servicios
+  // Borrar un servicio
   app.delete("/servicios/borrar/:id", serviciosController.Borrar);
 
   // Listar todos los servicios
   app.get("/servicios/listarTodos", serviciosController.ListarTodos);
 
-  // Obtener un servicios
+  // Obtener un servicio
   app.get("/servicios/listarId/:id", serviciosController.ListarId);
-  };
+};
