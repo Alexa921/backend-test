@@ -12,19 +12,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // ✅ Configuración de CORS
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || config.listablanca.includes(origin)) {
-        return callback(null, true);
+app.use(cors({
+  origin: function(origin, callback){
+      console.log(origin)
+      if(!origin) return callback(null, true)
+      if(config.listablanca.indexOf(origin) === -1){
+         return callback("error de cors sin permiso para: " + origin, false ) 
       }
-      return callback(
-        new Error(`Error de CORS: No tiene permiso para ${origin}`)
-      );
-    },
-    credentials: true,
-  })
-);
+      else{
+          return callback(null, true)
+      }
+  },credentials:true
+}))
 
 // ✅ Importación correcta de r
 //app.use("/api", rutas);
@@ -51,16 +50,11 @@ mongoose
   });
    require("./rutas.js");
 // ✅ Servir archivos estáticos del frontend
-/*app.use(
-  "/",
-  express.static(path.join(__dirname, "dist", "frontend", "browser"))
-);
+app.use("/", express.static(__dirname + "/dist/frontend/browser"))
 
-app.get("/*", (req, res) => {
-  res.sendFile(
-    path.resolve(__dirname, "dist", "frontend", "browser", "index.html")
-  );
-});*/
+app.get("/*", function (req, res, next) {
+  res.sendFile(path.resolve(__dirname + "/dist/frontend/browser/index.html"))
+})
 
 // ✅ Iniciar servidor
 app.listen(config.puerto, () => {
