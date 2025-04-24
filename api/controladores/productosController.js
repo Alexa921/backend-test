@@ -51,8 +51,9 @@ productosController.Guardar = function(request, response) {
         if(existe.length > 0) {
             return response.json({state: false, mensaje: "El código del producto ya existe intente con otro"});
         }
-
+        
         productosModel.Guardar(post, function(data) {
+          
             if(data.state) {
                 return response.json({state: true, mensaje: "El producto se ha agregado correctamente"});
             } else {

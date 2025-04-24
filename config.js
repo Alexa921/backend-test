@@ -23,7 +23,7 @@ config.email.pass = 'bszxzottwogzwoqy';
 config.listablanca = [
   "http://localhost:4200",
   "http://localhost:9876",
-  "http://localhost:3001",
+  "http://localhost:3001", 
 ]
 
 module.exports.config = config;

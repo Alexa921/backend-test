@@ -12,7 +12,7 @@ let productosSchema = new Schema({
     categoria: {
         type: String,
         required: true,
-        enum: ['home', 'productos', 'hombre', 'mujer', 'nino', 'descuento'],
+        enum: ['home', 'productos', 'hombre', 'mujer', 'nino', 'descuentos'],
         default: 'home'
     }
 });
@@ -35,7 +35,7 @@ productosModel.Guardar = function (post, callback) {
             return callback({ state: true });
         })
         .catch((error) => {
-            console.error('Error al guardar el producto:', error); // Log el error completo
+            console.error(error); 
             return callback({ state: false, mensaje: 'Error al guardar el producto', error: error });
         });
 }
