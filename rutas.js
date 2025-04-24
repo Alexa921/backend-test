@@ -1,4 +1,6 @@
-module.exports = function (app) {
+app.post('/ola', (req, res) => { res.send("Hola Mundo!") })
+
+//module.exports = function (app) {
   // Controladores
   const productosController = require("./api/controladores/productosController.js").productosController;
   const usuariosController = require("./api/controladores/usuariosController.js").usuariosController;
@@ -21,7 +23,7 @@ module.exports = function (app) {
   app.get("/productos/listarTodos", productosController.ListarTodos);
 
   // Obtener un producto por ID
-  app.get("/productos/listarId/:id", productosController.ListarId);
+  app.post("/productos/listarId", productosController.ListarId);
 
   // ===============================
   // RUTAS DE USUARIOS
@@ -53,7 +55,7 @@ module.exports = function (app) {
   });
 
   // Login
-  app.post("/usuarios/login", (req, res) => {
+  app.post("/usuarios/login", function (req, res) {
     usuariosController.Login(req, res);
   });
 
@@ -85,4 +87,6 @@ module.exports = function (app) {
 
   // Obtener un servicio
   app.get("/servicios/listarId/:id", serviciosController.ListarId);
-};
+
+
+

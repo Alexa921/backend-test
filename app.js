@@ -1,54 +1,68 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const session = require("express-session");
 const cors = require("cors");
-const config = require("./config");
+const path = require("path");
+const { config } = require("./config.js");
+global.app = express();
 
-const app = express();
+// ✅ Middleware para parsear JSON y datos de formulario
 
-// ✅ Configuración de CORS correctamente
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// ✅ Configuración de CORS
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || config.listablanca.includes(origin)) {
         return callback(null, true);
       }
-      return callback(new Error("No permitido por CORS: " + origin));
+      return callback(
+        new Error(`Error de CORS: No tiene permiso para ${origin}`)
+      );
     },
     credentials: true,
   })
 );
 
-// ✅ Middleware para parsear JSON (necesario para leer req.body)
-app.use(express.json());
+// ✅ Importación correcta de r
+//app.use("/api", rutas);
 
-// ✅ Configuración de sesiones
-app.use(
-  session({
-    secret: config.secret,
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      maxAge: config.expiracion,
-      httpOnly: true,
-    },
-    name: "cookieApp",
-    rolling: true,
+// ✅ Conexión a MongoDB con manejo de errores mejorado
+mongoose
+  .connect(
+    "mongodb://" +
+      config.bdUser +
+      ":" +
+      config.bdPass +
+      "@" +
+      config.bdIp +
+      ":" +
+      config.bdPort +
+      "/" +
+      config.bd
+  )
+  .then((respuesta) => {
+    console.log("Conexion correcta a mongo");
   })
+  .catch((error) => {
+    console.log(error);
+  });
+   require("./rutas.js");
+// ✅ Servir archivos estáticos del frontend
+/*app.use(
+  "/",
+  express.static(path.join(__dirname, "dist", "frontend", "browser"))
 );
 
-// ✅ Rutas
-require("./rutas.js")(app);
+app.get("/*", (req, res) => {
+  res.sendFile(
+    path.resolve(__dirname, "dist", "frontend", "browser", "index.html")
+  );
+});*/
 
-// ✅ Conexión a MongoDB
-mongoose
-  .connect(`mongodb://127.0.0.1:27017/${config.db}`)
-  .then(() => {
-    console.log("✅ Conexión a la base de datos establecida");
-    app.listen(config.puerto, () => {
-      console.log(`🚀 Servidor funcionando en el puerto: ${config.puerto}`);
-    });
-  })
-  .catch((err) => {
-    console.error("❌ Error al conectar a la base de datos:", err);
-  });
+// ✅ Iniciar servidor
+app.listen(config.puerto, () => {
+  console.log(`🚀 Servidor funcionando en el puerto: ${config.puerto}`);
+});

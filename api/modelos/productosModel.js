@@ -1,93 +1,97 @@
-var productosModel = {};
-const mongoose = require("mongoose");
+var productosModel = {}
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// Esquema de productos
-let productosSchema = new Schema(
-  {
-    imagen: { type: String, required: true },
-    titulo: { type: String, required: true },
+let productosSchema = new Schema({
+    codigo: { type: Number, required: true },
+    nombre: { type: String, required: true },
     precio: { type: Number, required: true },
-    material: { type: String, required: true },
+    descripcion: { type: String, required: true },
+    foto: { type: String, required: true },
+    cantidad: { type: Number, required: true },
     categoria: {
-      type: String,
-      required: true,
-      enum: ["home", "productos", "tendencias", "coleccion"],
-      default: "productos",
-    },
-  },
-  { timestamps: true }
-);
+        type: String,
+        required: true,
+        enum: ['home', 'productos', 'hombre', 'mujer', 'nino', 'descuento'],
+        default: 'home'
+    }
+});
 
-// Modelo de productos
-const Producto = mongoose.model("productos", productosSchema);
+const Mymodel = mongoose.model('productos', productosSchema);
 
-// Guardar un producto
 productosModel.Guardar = function (post, callback) {
-  const instancia = new Producto(post);
-  instancia
-    .save()
-    .then(() => callback({ state: true }))
-    .catch((error) => {
-      console.error(error);
-      return callback({ state: false, error });
+    const instancia = new Mymodel({
+        codigo: post.codigo,
+        nombre: post.nombre,
+        precio: post.precio,
+        descripcion: post.descripcion,
+        foto: post.foto,
+        cantidad: post.cantidad,
+        categoria: post.categoria
     });
+
+    instancia.save()
+        .then(() => {
+            return callback({ state: true });
+        })
+        .catch((error) => {
+            console.error('Error al guardar el producto:', error); // Log el error completo
+            return callback({ state: false, mensaje: 'Error al guardar el producto', error: error });
+        });
+}
+
+productosModel.ListarTodos = function (filtro, callback) {
+    Mymodel.find(filtro || {})
+        .then((productos) => callback(null, productos))
+        .catch((error) => callback(error));
 };
 
-// Listar todos los productos
-productosModel.ListarTodos = function (filtro = {}, callback) {
-  Producto.find(filtro)
-    .then((productos) => callback(null, productos))
-    .catch((error) => callback(error));
-};
+productosModel.ListarId = function (post, callback) {
+    Mymodel.find({ _id: post.id }, { codigo: 1, nombre: 1, precio: 1, descripcion: 1, foto: 1, cantidad: 1, categoria: 1 })
+        .then((res) => {
+            return callback(res)
+        }).catch((err) => {
+            console.log(err)
+            return callback({ error: err })
+        })
+}
 
-// Listar un producto por ID
-productosModel.ListarId = function (id, callback) {
-  Producto.findById(id)
-    .then((producto) => callback(null, producto))
-    .catch((error) => callback(error));
-};
-
-// Actualizar un producto por ID
-productosModel.ActualizarPorId = function (id, data, callback) {
-  Producto.findByIdAndUpdate(id, data, { new: true })
-    .then((producto) => {
-      if (producto) {
-        callback({ state: true });
-      } else {
-        callback({ state: false, mensaje: "Producto no encontrado" });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      callback({ state: false, error });
-    });
-};
-
-// Borrar un producto por ID
-productosModel.BorrarPorId = function (id, callback) {
-  Producto.findByIdAndDelete(id)
-    .then((producto) => {
-      if (producto) {
-        callback({ state: true });
-      } else {
-        callback({ state: false, mensaje: "Producto no encontrado" });
-      }
-    })
-    .catch((error) => {
-      console.error(error);
-      callback({ state: false, error });
-    });
-};
-
-// Verificar si un producto existe por título
 productosModel.Existe = function (post, callback) {
-  Producto.findOne({ titulo: post.titulo })
-    .then((producto) => callback(producto ? true : false))
-    .catch((error) => {
-      console.error(error);
-      callback(false);
+    Mymodel.findOne({ _id: post.id }, {})
+        .then((respuesta) => {
+            return callback(respuesta ? true : false);
+        }).catch((error) => {
+            console.log(error);
+            return callback({ error: error });
+        });
+}
+
+productosModel.Actualizar = function (post, callback) {
+    Mymodel.findOneAndUpdate(
+        { _id: post.id },
+        {
+            nombre: post.nombre, precio: post.precio, descripcion: post.descripcion,
+            foto: post.foto, cantidad: post.cantidad, categoria: post.categoria
+        },
+        { new: true }
+    ).then((response) => {
+        return callback({ state: true });
+    }).catch((error) => {
+        return callback({ state: false, error: error });
     });
 };
+
+productosModel.Borrar = function (post, callback) {
+    Mymodel.findOneAndDelete({ _id: post.id })
+        .then((respuesta) => {
+            if (respuesta) {
+                return callback({ state: true });
+            } else {
+                return callback({ state: false, mensaje: "Producto no encontrado" });
+            }
+        }).catch((error) => {
+            return callback({ state: false, error: error });
+        });
+}
 
 module.exports.productosModel = productosModel;
